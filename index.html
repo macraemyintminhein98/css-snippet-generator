@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Snippet Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles for glowing button example */
+        .glowing-btn {
+            position: relative;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            border: none;
+            background: linear-gradient(45deg, #FF00FF, #00FFFF);
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            overflow: hidden;
+            transition: background 0.3s ease;
+        }
+        .glowing-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(45deg);
+            animation: glow-effect 3s linear infinite ease-in-out;
+            opacity: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+        .glowing-btn:hover::before {
+            opacity: 1;
+        }
+        @keyframes glow-effect {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
+        <h1 class="text-3xl font-bold mb-6 text-center">CSS Snippet Generator</h1>
+        <p class="mb-4 text-gray-700 text-center">Generate common CSS snippets quickly!</p>
+        
+        <div class="mb-6">
+            <label for="snippet-type" class="block text-gray-700 text-sm font-bold mb-2">Select Snippet:</label>
+            <select id="snippet-type" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <option value="responsive-image">Responsive Image</option>
+                <option value="flexbox-center">Flexbox Center</option>
+                <option value="glowing-button">Glowing Button</option>
+            </select>
+        </div>
+
+        <div id="options-container" class="mb-6">
+            <!-- Options will be loaded here based on snippet-type -->
+        </div>
+
+        <button id="generate-btn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full">Generate CSS</button>
+        
+        <pre id="css-output" class="bg-gray-800 text-white p-4 rounded mt-6 overflow-x-auto text-sm"></pre>
+        <button id="copy-btn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full mt-4 hidden">Copy to Clipboard</button>
+
+        <p class="text-center text-sm text-gray-600 mt-8">Purchase full access for more snippets and advanced options!</p>
+        <a href="#" id="buy-now-btn" class="block text-center mt-4 bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">Buy Now ($5)</a>
+
+    </div>
+
+    <script>
+        const snippetType = document.getElementById('snippet-type');
+        const optionsContainer = document.getElementById('options-container');
+        const generateBtn = document.getElementById('generate-btn');
+        const cssOutput = document.getElementById('css-output');
+        const copyBtn = document.getElementById('copy-btn');
+        const buyNowBtn = document.getElementById('buy-now-btn');
+
+        // Dummy Stripe Checkout for the MVP - will be replaced with actual integration
+        buyNowBtn.addEventListener('click', () => {
+            alert('Redirecting to secure checkout! (Placeholder for Stripe integration)');
+            console.log('Initiating checkout for $5.00');
+        });
+
+        const snippets = {
+            'responsive-image': {
+                options: '',
+                css: `img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}`
+            },
+            'flexbox-center': {
+                options: '',
+                css: `.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* Example: full viewport height */
+    border: 1px dashed lightgray;
+}
+.child {
+    /* Your content here */
+}`
+            },
+            'glowing-button': {
+                options: `<div class="mb-4">
+                                <label for="glow-color" class="block text-gray-700 text-sm font-bold mb-2">Glow Color (Hex):</label>
+                                <input type="text" id="glow-color" value="#FF00FF" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </div>`,
+                generateCss: (options) => {
+                    const color = document.getElementById('glow-color').value || '#FF00FF';
+                    return `.glowing-btn {
+    position: relative;
+    padding: 10px 20px;
+    font-size: 1.2em;
+    border: none;
+    background: linear-gradient(45deg, ${color}, #00FFFF);
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+    overflow: hidden;
+    transition: background 0.3s ease;
+}
+.glowing-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(45deg);
+    animation: glow-effect 3s linear infinite ease-in-out;
+    opacity: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+.glowing-btn:hover::before {
+    opacity: 1;
+}
+@keyframes glow-effect {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}`;}
+            }
+        };
+
+        const renderOptions = () => {
+            const selected = snippetType.value;
+            optionsContainer.innerHTML = snippets[selected]?.options || '';
+            cssOutput.textContent = ''; // Clear output on snippet change
+            copyBtn.classList.add('hidden');
+        };
+
+        generateBtn.addEventListener('click', () => {
+            const selected = snippetType.value;
+            let generatedCss = '';
+            if (snippets[selected]?.generateCss) {
+                generatedCss = snippets[selected].generateCss();
+            } else {
+                generatedCss = snippets[selected]?.css || '/* Select a snippet */';
+            }
+            cssOutput.textContent = generatedCss;
+            copyBtn.classList.remove('hidden');
+        });
+
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(cssOutput.textContent)
+                .then(() => alert('CSS copied to clipboard!'))
+                .catch(err => console.error('Failed to copy: ', err));
+        });
+
+        snippetType.addEventListener('change', renderOptions);
+
+        // Initial render
+        renderOptions();
+    </script>
+</body>
+</html>
